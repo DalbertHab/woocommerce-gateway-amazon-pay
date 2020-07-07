@@ -774,7 +774,7 @@ class WC_Gateway_Amazon_Payments_Advanced extends WC_Payment_Gateway {
 			// Check if we are under SCA.
 			$is_sca = WC_Amazon_Payments_Advanced_API::is_sca_region();
 			// Confirm order reference.
-			$this->confirm_order_reference( $amazon_reference_id, $is_sca );
+			$this->confirm_order_reference( $amazon_reference_id, $order, $is_sca );
 
 			/**
 			 * If retrieved order details missing `Name`, additional API
@@ -1169,11 +1169,12 @@ class WC_Gateway_Amazon_Payments_Advanced extends WC_Payment_Gateway {
 	 * @throws Exception Error from API request.
 	 *
 	 * @param string $amazon_reference_id Reference ID.
+     * @param WC_Order  $order  Woocommerce Order
 	 * @param bool   $is_sca If needs SCA, ConfirmOrderReference needs extra parameters.
 	 *
 	 * @return WP_Error|array WP_Error or parsed response array
 	 */
-	public function confirm_order_reference( $amazon_reference_id, $is_sca = false ) {
+	public function confirm_order_reference( $amazon_reference_id, $order, $is_sca = false ) {
 
 		$confirm_args = array(
 			'Action'                 => 'ConfirmOrderReference',
@@ -1182,7 +1183,7 @@ class WC_Gateway_Amazon_Payments_Advanced extends WC_Payment_Gateway {
 
 		if ( $is_sca ) {
 			// The buyer is redirected to this URL if the MFA is successful.
-			$confirm_args['SuccessUrl'] = wc_get_checkout_url();
+			$confirm_args['SuccessUrl'] = $this->get_return_url($order);
 			// The buyer is redirected to this URL if the MFA is unsuccessful.
 			$confirm_args['FailureUrl'] = wc_get_checkout_url();
 		}
